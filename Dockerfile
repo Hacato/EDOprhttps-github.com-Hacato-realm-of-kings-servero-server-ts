@@ -18,6 +18,41 @@ RUN git clone --depth 1 --branch master https://github.com/ProjectIgnis/CardScri
     wget -O ygopro-lflist.conf https://cdntx.moecube.com/ygopro-database/zh-CN/lflist.conf && \
     wget -O ygopro-cards.cdb https://cdntx.moecube.com/ygopro-database/zh-CN/cards.cdb
 
+RUN bash -c 'set -e; \
+    declare -A MAP=( \
+    ["2010.03 Edison(Pre Errata)"]="edison" \
+    ["2014.04 HAT (Pre Errata)"]="hat" \
+    ["jtp-oficial"]="jtp" \
+    ["GOAT"]="goat" \
+    ["Rush"]="rush" \
+    ["Speed"]="speed" \
+    ["Tengu.Plant"]="tengu" \
+    ["World"]="world" \
+    ["MD.2025.03"]="md" \
+    ["Genesys"]="genesys" \
+    ); \
+    for name in "${!MAP[@]}"; do \
+    src="./edopro-banlists-evolution/${name}.lflist.conf"; \
+    [ -f "$src" ] || src="./edopro-banlists-ignis/${name}.lflist.conf"; \
+    cp "$src" "./ygopro-format-alternatives/${MAP[$name]}/lflist.conf"; \
+    done'
+
+RUN find . -name ".git" -type d -exec rm -rf {} + 2>/dev/null; \
+    mkdir -p /resources/edopro \
+             /resources/ygopro/base \
+             /resources/ygopro/ocg && \
+    cp -r edopro-card-scripts /resources/edopro/scripts && \
+    cp -r edopro-card-databases /resources/edopro/databases && \
+    cp -r edopro-banlists-ignis /resources/edopro/banlists-ignis && \
+    cp -r edopro-banlists-evolution /resources/edopro/banlists-evolution && \
+    cp -r ygopro-scripts /resources/ygopro/base/script && \
+    cp ygopro-lflist.conf /resources/ygopro/base/lflist.conf && \
+    cp ygopro-cards.cdb /resources/ygopro/base/cards.cdb && \
+    cp -r ygopro-prereleases-cdb /resources/ygopro/prereleases-cdb && \
+    cp -r ygopro-cards-art /resources/ygopro/cards-art && \
+    cp -r ygopro-format-alternatives /resources/ygopro/alternatives && \
+    cp edopro-banlists-ignis/OCG.lflist.conf /resources/ygopro/ocg/lflist.conf
+
 
 # Stage 2: Build CoreIntegrator
 FROM public.ecr.aws/docker/library/node:24.11.0-bullseye-slim AS core-builder
@@ -34,10 +69,8 @@ RUN apt-get update -y && \
 
 WORKDIR /app
 
-# Copy whole repo
 COPY . .
 
-# IMPORTANT FIX — ensure modules exist where compiler expects
 RUN mkdir -p /app/core/modules && \
     if [ -d "/app/core/src/modules" ]; then \
         cp -r /app/core/src/modules/* /app/core/modules/; \
