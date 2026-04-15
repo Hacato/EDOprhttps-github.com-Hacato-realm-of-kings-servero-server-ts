@@ -243,7 +243,8 @@ Both engines share the same room management, player handling, and match lifecycl
 
 - [Multirole](https://github.com/DyXel/Multirole) by @Dyxel — the reference for the EDOPro engine
 - [srvpro2](https://github.com/purerosefallen/srvpro) — the reference for the YGOPro engine
-- The [Project Ignis](https://github.com/ProjectIgnis), [MyCard](https://mycard.moe/), and [Evolution](https://github.com/evolutionygo) communities
+- The [Project Ignis](https://github.com/ProjectIgnis), [MyCard](https://mycard.moe/), and [Evolution](https://github.com/evolutionygo) 
+communities
 
 ---
 
