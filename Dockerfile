@@ -79,7 +79,7 @@ WORKDIR /app
 COPY ./core .
 
 RUN cmake -B build -S . -DCMAKE_BUILD_TYPE=Release && \
-    cmake --build build 2>&1 | tee /build.log; exit ${PIPESTATUS[0]}
+    cmake --build build -- -j1
 
 
 # Stage 3: Build Node.js server
