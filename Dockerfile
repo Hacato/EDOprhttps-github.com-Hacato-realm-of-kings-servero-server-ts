@@ -78,6 +78,11 @@ WORKDIR /app
 
 COPY ./core ./core
 
+WORKDIR /app
+
+COPY ./core ./core
+COPY ./src/modules ./core/modules
+
 WORKDIR /app/core
 
 RUN cmake -B build -S . -DCMAKE_BUILD_TYPE=Release && \
