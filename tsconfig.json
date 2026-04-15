@@ -7,7 +7,7 @@
     "module": "commonjs",
     "resolveJsonModule": true,
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": ".",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": false,
@@ -15,7 +15,18 @@
     "skipLibCheck": true,
     "moduleResolution": "node",
     "sourceMap": true,
-    "inlineSources": true
+    "inlineSources": true,
+    "paths": {
+      "@edopro/*": [
+        "src/edopro/*"
+      ],
+      "@shared/*": [
+        "src/shared/*"
+      ],
+      "@ygopro/*": [
+        "src/ygopro/*"
+      ]
+    }
   },
   "include": [
     "src/**/*"
