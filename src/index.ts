@@ -23,6 +23,14 @@ start().catch((error) => {
 async function start(): Promise<void> {
   const logger = LoggerFactory.getLogger();
 
+  // 🔍 DEBUG: confirm startup + ports
+  console.log("BOOT_CHECK", {
+    httpPort: config.servers.http.port,
+    mercuryPort: config.servers.mercury.port,
+    websocketPort: config.servers.websocket.port,
+    duelPort: config.servers.websocket.duelPort,
+  });
+
   const server = new Server(logger);
   const ygoproServer = new YGOProServer(logger);
   const hostServer = new HostServer(logger);
