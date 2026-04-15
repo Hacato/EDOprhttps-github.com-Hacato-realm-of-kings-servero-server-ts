@@ -5,7 +5,7 @@
 #include <iomanip>
 #include <nlohmann/json.hpp>
 
-#include "../modules/duel/infrastructure/OCGRepository.h"
+#include "../../modules/duel/infrastructure/OCGRepository.h"
 #include "../modules/card/infrastructure/CardSqliteRepository.h"
 #include "../modules/shared/ScriptReader.h"
 #include "../modules/shared/FileReader.h"
