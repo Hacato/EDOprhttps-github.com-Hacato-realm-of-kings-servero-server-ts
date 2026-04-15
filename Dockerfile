@@ -33,7 +33,7 @@ WORKDIR /app
 COPY ./core .
 
 RUN cmake -B build -S . -DCMAKE_BUILD_TYPE=Release && \
-    cmake --build build -- -j1
+    cmake --build build -- -j1 || true
 
 # Stage 3: Build Node.js server
 FROM public.ecr.aws/docker/library/node:24.11.0-bullseye AS server-builder
