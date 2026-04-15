@@ -15,7 +15,6 @@ RUN mkdir -p /resources/edopro/scripts \
              /resources/ygopro/cards-art \
              /resources/ygopro/alternatives
 
-
 # Stage 2: Build CoreIntegrator (C++)
 FROM public.ecr.aws/docker/library/node:24.11.0-bullseye-slim AS core-builder
 
@@ -36,7 +35,6 @@ COPY ./core .
 RUN cmake -B build -S . -DCMAKE_BUILD_TYPE=Release && \
     cmake --build build -- -j1
 
-
 # Stage 3: Build Node.js server
 FROM public.ecr.aws/docker/library/node:24.11.0-bullseye AS server-builder
 
@@ -52,7 +50,6 @@ COPY . .
 RUN npm run build && \
     npm prune --production
 
-
 # Stage 4: Final image
 FROM public.ecr.aws/docker/library/node:24.11.0-slim
 
@@ -62,16 +59,13 @@ RUN apt-get update && \
 
 WORKDIR /app
 
-# Server
 COPY --from=server-builder /server/dist ./
 COPY --from=server-builder /server/package.json ./package.json
 COPY --from=server-builder /server/node_modules ./node_modules
 
-# CoreIntegrator binaries
 COPY --from=core-builder /app/libocgcore.so ./core/libocgcore.so
 COPY --from=core-builder /app/CoreIntegrator ./core/CoreIntegrator
 
-# Empty resources for now
 COPY --from=resources-builder /resources ./resources
 
 CMD ["dumb-init", "node", "./src/index.js"]
