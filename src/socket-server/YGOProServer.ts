@@ -33,19 +33,21 @@ export class YGOProServer {
 
 	initialize(): void {
 		this.server.listen(config.servers.mercury.port, () => {
+			console.log("MERCURY_LISTENING", config.servers.mercury.port);
 			this.logger.info(`Mercury server listen in port ${config.servers.mercury.port}`);
 		});
 
 		this.server.on("connection", (socket: Socket) => {
+			console.log("MERCURY_CONNECTION", socket.remoteAddress);
 			this.address = socket.remoteAddress;
 			const ygoClientSocket = new TCPClientSocket(socket);
 			const eventEmitter = new EventEmitter();
-			const messageRepository = new YGOProMessageRepository()
+			const messageRepository = new YGOProMessageRepository();
 
 			ygoClientSocket.id = uuidv4();
 
 			const connectionLogger = this.logger.child({
-				file: "	MercuryServer",
+				file: "MercuryServer",
 				socketId: ygoClientSocket.id,
 				remoteAddress: this.address,
 			});
@@ -55,6 +57,7 @@ export class YGOProServer {
 			const createGameListener = () => {
 				new YGOProGameCreatorHandler(eventEmitter, connectionLogger, messageRepository);
 			};
+
 			const joinGameListener = () => {
 				new YGOProJoinHandler(
 					eventEmitter,
@@ -73,6 +76,7 @@ export class YGOProServer {
 			);
 
 			socket.on("data", (data: Buffer) => {
+				console.log("MERCURY_DATA", data.length);
 				connectionLogger.debug(
 					`Incoming message handle by Mercury Server: ${data.toString("hex")}`
 				);
@@ -80,21 +84,21 @@ export class YGOProServer {
 			});
 
 			socket.on("end", () => {
-
+				console.log("MERCURY_END", socket.remoteAddress);
 				connectionLogger.info(`${socket.remoteAddress} left in end event`);
 				const disconnectHandler = new DisconnectHandler(ygoClientSocket, this.roomFinder);
 				disconnectHandler.run(this.address);
 			});
 
 			socket.on("close", () => {
-
+				console.log("MERCURY_CLOSE", socket.remoteAddress);
 				connectionLogger.info(`${socket.remoteAddress} left in close event`);
 				const disconnectHandler = new DisconnectHandler(ygoClientSocket, this.roomFinder);
 				disconnectHandler.run(this.address);
 			});
 
-			socket.on("error", (_error) => {
-
+			socket.on("error", (error) => {
+				console.log("MERCURY_ERROR", socket.remoteAddress, error);
 				connectionLogger.info(`${socket.remoteAddress} left in error event`);
 				const disconnectHandler = new DisconnectHandler(ygoClientSocket, this.roomFinder);
 				disconnectHandler.run(this.address);
