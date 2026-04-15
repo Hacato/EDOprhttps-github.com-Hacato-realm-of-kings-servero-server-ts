@@ -1,21 +1,39 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "outDir": "dist",
-    "rootDir": "src",
-    "strict": false,
-    "esModuleInterop": true,
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
+    "baseUrl": ".",
+    "target": "ES2022",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "baseUrl": ".",
+    "module": "commonjs",
+    "resolveJsonModule": true,
+    "outDir": "./dist",
+    "rootDir": ".",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": false,
+    "strictNullChecks": true,
+    "skipLibCheck": true,
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "inlineSources": true,
     "paths": {
-      "src/*": ["src/*"]
+      "@edopro/*": [
+        "src/edopro/*"
+      ],
+      "@shared/*": [
+        "src/shared/*"
+      ],
+      "@ygopro/*": [
+        "src/ygopro/*"
+      ]
     }
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "tests"
+  ]
 }
