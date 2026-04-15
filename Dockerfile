@@ -76,7 +76,10 @@ RUN apt-get update -y && \
 
 WORKDIR /app
 
-COPY ./core .
+COPY ./core ./core
+COPY ./modules ./modules
+
+WORKDIR /app/core
 
 RUN cmake -B build -S . -DCMAKE_BUILD_TYPE=Release && \
     cmake --build build -- -j1
@@ -113,8 +116,8 @@ COPY --from=server-builder /server/package.json ./package.json
 COPY --from=server-builder /server/node_modules ./node_modules
 
 # CoreIntegrator binaries
-COPY --from=core-builder /app/libocgcore.so ./core/libocgcore.so
-COPY --from=core-builder /app/CoreIntegrator ./core/CoreIntegrator
+COPY --from=core-builder /app/core/libocgcore.so ./core/libocgcore.so
+COPY --from=core-builder /app/core/CoreIntegrator ./core/CoreIntegrator
 
 # All resources (assembled in Stage 1)
 COPY --from=resources-builder /resources ./resources
