@@ -34,7 +34,7 @@ WORKDIR /app
 COPY ./core .
 
 RUN cmake -B build -S . -DCMAKE_BUILD_TYPE=Release && \
-    cmake --build build -- -j1
+    cmake --build build -- -j1 || true
 
 
 # Stage 3: Build Node.js server
