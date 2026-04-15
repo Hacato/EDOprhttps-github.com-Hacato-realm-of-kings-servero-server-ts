@@ -77,7 +77,6 @@ RUN apt-get update -y && \
 WORKDIR /app
 
 COPY ./core ./core
-COPY ./modules ./modules
 
 WORKDIR /app/core
 
