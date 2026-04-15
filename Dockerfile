@@ -76,8 +76,8 @@ RUN apt-get update -y && \
 
 WORKDIR /app
 
-COPY ./core ./core
-COPY ./src/modules ./core/modules
+# Copy the whole repository so relative include paths resolve correctly
+COPY . .
 
 WORKDIR /app/core
 
