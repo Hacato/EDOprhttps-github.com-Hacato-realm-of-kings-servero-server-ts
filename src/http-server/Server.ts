@@ -1,48 +1,37 @@
-import express, { Express } from "express";
-import { config } from "src/config";
+constructor(logger: Logger) {
+  this.logger = logger;
+  this.app = express();
+  this.app.use(express.json());
 
-import { Logger } from "../shared/logger/domain/Logger";
-import { createDirectoryIfNotExists } from "../utils";
-import { loadRoutes } from "./routes";
+  this.app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    if (
+      origin &&
+      (config.allowedOrigins.includes("*") ||
+        config.allowedOrigins.includes(origin))
+    ) {
+      res.header("Access-Control-Allow-Origin", origin);
+    }
+    res.header(
+      "Access-Control-Allow-Methods",
+      "GET, POST, OPTIONS, PUT, DELETE",
+    );
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Origin, X-Requested-With, Content-Type, Accept, Authorization, admin-api-key",
+    );
 
-export class Server {
-  private readonly app: Express;
-  private readonly logger: Logger;
+    if (req.method === "OPTIONS") {
+      res.sendStatus(200);
+    } else {
+      next();
+    }
+  });
 
-  constructor(logger: Logger) {
-    this.logger = logger;
-    this.app = express();
-    this.app.use(express.json());
-    this.app.use((req, res, next) => {
-      const origin = req.headers.origin;
-      if (
-        origin &&
-        (config.allowedOrigins.includes("*") ||
-          config.allowedOrigins.includes(origin))
-      ) {
-        res.header("Access-Control-Allow-Origin", origin);
-      }
-      res.header(
-        "Access-Control-Allow-Methods",
-        "GET, POST, OPTIONS, PUT, DELETE",
-      );
-      res.header(
-        "Access-Control-Allow-Headers",
-        "Origin, X-Requested-With, Content-Type, Accept, Authorization, admin-api-key",
-      );
-      if (req.method === "OPTIONS") {
-        res.sendStatus(200);
-      } else {
-        next();
-      }
-    });
-    loadRoutes(this.app, this.logger);
-  }
+  // 👇 ADD THIS HEALTH ROUTE
+  this.app.get("/", (_req, res) => {
+    res.status(200).send("Server is running");
+  });
 
-  async initialize(): Promise<void> {
-    await createDirectoryIfNotExists("./config");
-    this.app.listen(config.servers.http.port, () => {
-      this.logger.info(`Server listen in port ${config.servers.http.port}`);
-    });
-  }
+  loadRoutes(this.app, this.logger);
 }
