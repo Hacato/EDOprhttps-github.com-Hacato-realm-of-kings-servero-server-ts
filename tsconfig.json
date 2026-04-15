@@ -15,18 +15,7 @@
     "skipLibCheck": true,
     "moduleResolution": "node",
     "sourceMap": true,
-    "inlineSources": true,
-    "paths": {
-      "@edopro/*": [
-        "src/edopro/*"
-      ],
-      "@shared/*": [
-        "src/shared/*"
-      ],
-      "@ygopro/*": [
-        "src/ygopro/*"
-      ]
-    }
+    "inlineSources": true
   },
   "include": [
     "src/**/*"
