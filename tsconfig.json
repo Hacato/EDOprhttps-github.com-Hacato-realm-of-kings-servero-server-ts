@@ -2,38 +2,27 @@
   "compilerOptions": {
     "baseUrl": ".",
     "target": "ES2022",
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "module": "commonjs",
-    "resolveJsonModule": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "outDir": "./dist",
     "rootDir": ".",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "resolveJsonModule": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": false,
     "strictNullChecks": true,
     "skipLibCheck": true,
-    "moduleResolution": "node",
     "sourceMap": true,
     "inlineSources": true,
+    "allowImportingTsExtensions": false,
     "paths": {
-      "@edopro/*": [
-        "src/edopro/*"
-      ],
-      "@shared/*": [
-        "src/shared/*"
-      ],
-      "@ygopro/*": [
-        "src/ygopro/*"
-      ]
+      "@edopro/*": ["src/edopro/*"],
+      "@shared/*": ["src/shared/*"],
+      "@ygopro/*": ["src/ygopro/*"]
     }
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "tests"
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "tests"]
 }
