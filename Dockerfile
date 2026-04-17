@@ -113,14 +113,16 @@ RUN npm rebuild better-sqlite3
 COPY --from=core-builder /app/core/libocgcore.so ./core/libocgcore.so
 COPY --from=core-builder /app/core/CoreIntegrator ./core/CoreIntegrator
 
-# Fixed: copy resources to absolute /resources instead of /app/resources
-COPY --from=resources-builder /resources /resources
+# Keep resources where the app actually looks: /app/resources
+COPY --from=resources-builder /resources ./resources
 
-RUN echo "##### DATABASE FILES (/resources)" && \
-    ls -lh /resources/edopro/databases/ && \
-    echo "##### SCRIPT FILES (/resources)" && \
-    ls -lh /resources/edopro/scripts/ && \
-    echo "##### IMAGE FILES (/resources)" && \
-    ls -lh /resources/edopro/pics/ || true
+RUN echo "##### DATABASE FILES (/app/resources)" && \
+    ls -lh /app/resources/edopro/databases/ && \
+    echo "##### SCRIPT FILES (/app/resources)" && \
+    ls -lh /app/resources/edopro/scripts/ && \
+    echo "##### IMAGE FILES (/app/resources)" && \
+    ls -lh /app/resources/edopro/pics/ && \
+    echo "##### BANLIST FILES (/app/resources)" && \
+    ls -lh /app/resources/edopro/banlists-evolution/ || true
 
 CMD ["dumb-init", "node", "./dist/src/index.js"]
