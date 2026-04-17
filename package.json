@@ -18,7 +18,7 @@
 
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "prepare": "husky",
+    "prepare": "husky || true",
 
     "create-user": "ts-node-dev -r tsconfig-paths/register --respawn --poll --require dotenv/config src/utils/create-user.ts",
     "genesys": "ts-node-dev -r tsconfig-paths/register --respawn --poll --require dotenv/config src/utils/generate-genesys-format-json.ts",
