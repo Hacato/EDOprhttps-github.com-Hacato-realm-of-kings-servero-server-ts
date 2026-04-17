@@ -46,12 +46,12 @@ RUN cp -r edopro-card-scripts/* /resources/edopro/scripts/ && \
     find realm-of-kings -maxdepth 1 -name "*.cdb" -exec cp {} /resources/edopro/databases/ \; && \
     if [ -d "realm-of-kings/pics" ]; then cp -r realm-of-kings/pics/* /resources/edopro/pics/; fi && \
     chmod -R a+r /resources && \
-    # Debug statements for verification in logs
-    echo "##### DATABASE FILES" && \
+    # Debug: confirmation at build time
+    echo "##### DATABASE FILES (build)" && \
     ls -lh /resources/edopro/databases/ && \
-    echo "##### SCRIPT FILES" && \
+    echo "##### SCRIPT FILES (build)" && \
     ls -lh /resources/edopro/scripts/ && \
-    echo "##### IMAGE FILES" && \
+    echo "##### IMAGE FILES (build)" && \
     ls -lh /resources/edopro/pics/ || true
 
 # Stage 2: Build CoreIntegrator
@@ -117,5 +117,13 @@ COPY --from=core-builder /app/core/libocgcore.so ./core/libocgcore.so
 COPY --from=core-builder /app/core/CoreIntegrator ./core/CoreIntegrator
 
 COPY --from=resources-builder /resources ./resources
+
+# --- DEBUG: Print runtime file locations just before boot ---
+RUN echo "##### DATABASE FILES (final image)" && ls -lh /resources/edopro/databases/ && \
+    echo "##### SCRIPT FILES (final image)" && ls -lh /resources/edopro/scripts/ && \
+    echo "##### IMAGE FILES (final image)" && ls -lh /resources/edopro/pics/ && \
+    echo "##### DATABASE FILES (/app/resources)" && ls -lh /app/resources/edopro/databases/ && \
+    echo "##### SCRIPT FILES (/app/resources)" && ls -lh /app/resources/edopro/scripts/ && \
+    echo "##### IMAGE FILES (/app/resources)" && ls -lh /app/resources/edopro/pics/ || true
 
 CMD ["dumb-init", "node", "./dist/src/index.js"]
