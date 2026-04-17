@@ -7,7 +7,6 @@ RUN apt-get update -y && \
 
 WORKDIR /repositories
 
-# Clone all required repositories
 RUN git clone --depth 1 --branch master https://github.com/ProjectIgnis/CardScripts.git edopro-card-scripts && \
     git clone --depth 1 --branch master https://github.com/ProjectIgnis/BabelCDB.git edopro-card-databases && \
     git clone --depth 1 --branch master https://github.com/ProjectIgnis/LFLists edopro-banlists-ignis && \
@@ -20,7 +19,6 @@ RUN git clone --depth 1 --branch master https://github.com/ProjectIgnis/CardScri
     wget -O ygopro-lflist.conf https://cdntx.moecube.com/ygopro-database/zh-CN/lflist.conf && \
     wget -O ygopro-cards.cdb https://cdntx.moecube.com/ygopro-database/zh-CN/cards.cdb
 
-# Create resource directories
 RUN mkdir -p /resources/edopro/scripts \
     /resources/edopro/databases \
     /resources/edopro/banlists-ignis \
@@ -32,7 +30,6 @@ RUN mkdir -p /resources/edopro/scripts \
     /resources/ygopro/alternatives \
     /resources/ygopro/ocg
 
-# Copy scripts, databases, banlists, art, and custom content into resources
 RUN cp -r edopro-card-scripts/* /resources/edopro/scripts/ && \
     cp -r edopro-card-databases/* /resources/edopro/databases/ && \
     cp -r edopro-banlists-ignis/* /resources/edopro/banlists-ignis/ && \
@@ -48,7 +45,14 @@ RUN cp -r edopro-card-scripts/* /resources/edopro/scripts/ && \
     cp -r realm-of-kings/scripts/* /resources/edopro/scripts/ && \
     find realm-of-kings -maxdepth 1 -name "*.cdb" -exec cp {} /resources/edopro/databases/ \; && \
     if [ -d "realm-of-kings/pics" ]; then cp -r realm-of-kings/pics/* /resources/edopro/pics/; fi && \
-    chmod -R a+r /resources
+    chmod -R a+r /resources && \
+    # Debug statements for verification in logs
+    echo "##### DATABASE FILES" && \
+    ls -lh /resources/edopro/databases/ && \
+    echo "##### SCRIPT FILES" && \
+    ls -lh /resources/edopro/scripts/ && \
+    echo "##### IMAGE FILES" && \
+    ls -lh /resources/edopro/pics/ || true
 
 # Stage 2: Build CoreIntegrator
 FROM public.ecr.aws/docker/library/node:24.11.0-bullseye-slim AS core-builder
