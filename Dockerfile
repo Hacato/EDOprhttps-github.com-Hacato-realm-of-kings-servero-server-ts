@@ -116,13 +116,17 @@ COPY --from=core-builder /app/core/CoreIntegrator ./core/CoreIntegrator
 # Keep resources where the app actually looks: /app/resources
 COPY --from=resources-builder /resources ./resources
 
-RUN echo "##### DATABASE FILES (/app/resources)" && \
+ARG CACHE_BUST=2
+RUN echo "CACHE_BUST=$CACHE_BUST" && \
+    echo "##### DATABASE FILES (/app/resources)" && \
     ls -lh /app/resources/edopro/databases/ && \
     echo "##### SCRIPT FILES (/app/resources)" && \
     ls -lh /app/resources/edopro/scripts/ && \
     echo "##### IMAGE FILES (/app/resources)" && \
     ls -lh /app/resources/edopro/pics/ && \
     echo "##### BANLIST FILES (/app/resources)" && \
-    ls -lh /app/resources/edopro/banlists-evolution/ || true
+    ls -lh /app/resources/edopro/banlists-evolution/ && \
+    echo "##### YGOPRO BASE FILES (/app/resources)" && \
+    ls -lh /app/resources/ygopro/base/ || true
 
 CMD ["dumb-init", "node", "./dist/src/index.js"]
