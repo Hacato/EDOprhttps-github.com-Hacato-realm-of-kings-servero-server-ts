@@ -30,8 +30,7 @@ RUN mkdir -p \
     /resources/ygopro/prereleases-cdb \
     /resources/ygopro/cards-art \
     /resources/ygopro/alternatives \
-    /resources/ygopro/ocg \
-    /resources/repositories/Realm-Of-Kings
+    /resources/ygopro/ocg
 
 RUN cp -r edopro-card-scripts/* /resources/edopro/scripts/ && \
     cp -r edopro-card-databases/* /resources/edopro/databases/ && \
@@ -44,7 +43,8 @@ RUN cp -r edopro-card-scripts/* /resources/edopro/scripts/ && \
     cp -r ygopro-cards-art/* /resources/ygopro/cards-art/ && \
     cp -r ygopro-format-alternatives/* /resources/ygopro/alternatives/ && \
     cp edopro-banlists-ignis/OCG.lflist.conf /resources/ygopro/ocg/lflist.conf && \
-    cp -r realm-of-kings/* /resources/repositories/Realm-Of-Kings/
+    cp -r realm-of-kings/scripts/* /resources/edopro/scripts/ && \
+    find realm-of-kings -maxdepth 1 -name "*.cdb" -exec cp {} /resources/edopro/databases/ \;
 
 RUN test -d /resources || mkdir -p /resources
 
@@ -123,6 +123,5 @@ COPY --from=core-builder /app/core/libocgcore.so ./core/libocgcore.so
 COPY --from=core-builder /app/core/CoreIntegrator ./core/CoreIntegrator
 
 COPY --from=resources-builder /resources ./resources
-COPY --from=resources-builder /resources/repositories ./repositories
 
 CMD ["dumb-init", "node", "./dist/src/index.js"]
