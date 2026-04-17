@@ -12,6 +12,7 @@ export class Server {
     this.logger = logger;
     this.app = express();
     this.app.use(express.json());
+
     this.app.use((req, res, next) => {
       const origin = req.headers.origin;
       if (
@@ -21,14 +22,17 @@ export class Server {
       ) {
         res.header("Access-Control-Allow-Origin", origin);
       }
+
       res.header(
         "Access-Control-Allow-Methods",
         "GET, POST, OPTIONS, PUT, DELETE",
       );
+
       res.header(
         "Access-Control-Allow-Headers",
         "Origin, X-Requested-With, Content-Type, Accept, Authorization, admin-api-key",
       );
+
       if (req.method === "OPTIONS") {
         res.sendStatus(200);
       } else {
@@ -37,7 +41,10 @@ export class Server {
     });
 
     this.app.get("/health", (_req, res) => {
-      res.status(200).json({ status: "online", uptime: process.uptime() });
+      res.status(200).json({
+        status: "online",
+        uptime: process.uptime(),
+      });
     });
 
     loadRoutes(this.app, this.logger);
@@ -45,8 +52,15 @@ export class Server {
 
   async initialize(): Promise<void> {
     await createDirectoryIfNotExists("./config");
-    this.app.listen(config.servers.http.port, () => {
-      this.logger.info(`Server listen in port ${config.servers.http.port}`);
+
+    // ✅ Railway-compatible port handling
+    const httpPort =
+      Number(process.env.PORT) ||
+      config.servers.http.port ||
+      7922;
+
+    this.app.listen(httpPort, () => {
+      this.logger.info(`Server listen in port ${httpPort}`);
     });
   }
 }
