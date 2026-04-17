@@ -7,7 +7,9 @@ RUN apt-get update -y && \
 
 WORKDIR /repositories
 
-RUN git clone --depth 1 --branch master https://github.com/ProjectIgnis/CardScripts.git edopro-card-scripts && \
+ARG CACHE_BUST_DOWNLOAD=3
+RUN echo "DOWNLOAD_BUST=$CACHE_BUST_DOWNLOAD" && \
+    git clone --depth 1 --branch master https://github.com/ProjectIgnis/CardScripts.git edopro-card-scripts && \
     git clone --depth 1 --branch master https://github.com/ProjectIgnis/BabelCDB.git edopro-card-databases && \
     git clone --depth 1 --branch master https://github.com/ProjectIgnis/LFLists edopro-banlists-ignis && \
     git clone --depth 1 --branch main https://github.com/termitaklk/lflist edopro-banlists-evolution && \
@@ -16,8 +18,8 @@ RUN git clone --depth 1 --branch master https://github.com/ProjectIgnis/CardScri
     git clone --depth 1 --branch main https://github.com/evolutionygo/cards-art-server ygopro-cards-art && \
     git clone --depth 1 --branch main https://github.com/evolutionygo/server-formats-cdb.git ygopro-format-alternatives && \
     git clone --depth 1 --branch main https://github.com/Hacato/Realm-Of-Kings.git realm-of-kings && \
-    wget -O ygopro-lflist.conf https://cdntx.moecube.com/ygopro-database/zh-CN/lflist.conf && \
-    wget -O ygopro-cards.cdb https://cdntx.moecube.com/ygopro-database/zh-CN/cards.cdb
+    wget --no-cache -O ygopro-lflist.conf https://cdntx.moecube.com/ygopro-database/zh-CN/lflist.conf && \
+    wget --no-cache -O ygopro-cards.cdb https://cdntx.moecube.com/ygopro-database/zh-CN/cards.cdb
 
 RUN mkdir -p /resources/edopro/scripts \
     /resources/edopro/databases \
