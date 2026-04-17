@@ -41,12 +41,10 @@ RUN cp -r edopro-card-scripts/* /resources/edopro/scripts/ && \
     cp -r ygopro-cards-art/* /resources/ygopro/cards-art/ && \
     cp -r ygopro-format-alternatives/* /resources/ygopro/alternatives/ && \
     cp edopro-banlists-ignis/OCG.lflist.conf /resources/ygopro/ocg/lflist.conf && \
-    # Custom cards: scripts, databases, and images from Realm-Of-Kings
     cp -r realm-of-kings/scripts/* /resources/edopro/scripts/ && \
     find realm-of-kings -maxdepth 1 -name "*.cdb" -exec cp {} /resources/edopro/databases/ \; && \
     if [ -d "realm-of-kings/pics" ]; then cp -r realm-of-kings/pics/* /resources/edopro/pics/; fi && \
     chmod -R a+r /resources && \
-    # Debug: confirmation at build time
     echo "##### DATABASE FILES (build)" && \
     ls -lh /resources/edopro/databases/ && \
     echo "##### SCRIPT FILES (build)" && \
@@ -84,7 +82,6 @@ COPY package.json package-lock.json ./
 ENV HUSKY=0
 RUN npm ci --ignore-scripts
 
-# Necessary for evolution-types dependency
 RUN git clone --depth 1 https://github.com/diangogav/evolution-types.git ./src/evolution-types
 
 COPY . .
@@ -116,14 +113,14 @@ RUN npm rebuild better-sqlite3
 COPY --from=core-builder /app/core/libocgcore.so ./core/libocgcore.so
 COPY --from=core-builder /app/core/CoreIntegrator ./core/CoreIntegrator
 
-COPY --from=resources-builder /resources ./resources
+# Fixed: copy resources to absolute /resources instead of /app/resources
+COPY --from=resources-builder /resources /resources
 
-# --- DEBUG: Print runtime file locations just before boot ---
-RUN echo "##### DATABASE FILES (final image)" && ls -lh /resources/edopro/databases/ && \
-    echo "##### SCRIPT FILES (final image)" && ls -lh /resources/edopro/scripts/ && \
-    echo "##### IMAGE FILES (final image)" && ls -lh /resources/edopro/pics/ && \
-    echo "##### DATABASE FILES (/app/resources)" && ls -lh /app/resources/edopro/databases/ && \
-    echo "##### SCRIPT FILES (/app/resources)" && ls -lh /app/resources/edopro/scripts/ && \
-    echo "##### IMAGE FILES (/app/resources)" && ls -lh /app/resources/edopro/pics/ || true
+RUN echo "##### DATABASE FILES (/resources)" && \
+    ls -lh /resources/edopro/databases/ && \
+    echo "##### SCRIPT FILES (/resources)" && \
+    ls -lh /resources/edopro/scripts/ && \
+    echo "##### IMAGE FILES (/resources)" && \
+    ls -lh /resources/edopro/pics/ || true
 
 CMD ["dumb-init", "node", "./dist/src/index.js"]
