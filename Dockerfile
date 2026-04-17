@@ -18,7 +18,6 @@ RUN git clone --depth 1 --branch master https://github.com/ProjectIgnis/CardScri
     wget -O ygopro-lflist.conf https://cdntx.moecube.com/ygopro-database/zh-CN/lflist.conf && \
     wget -O ygopro-cards.cdb https://cdntx.moecube.com/ygopro-database/zh-CN/cards.cdb
 
-# IMPORTANT — always create resources folder first
 RUN mkdir -p /resources
 
 RUN mkdir -p \
@@ -44,7 +43,6 @@ RUN cp -r edopro-card-scripts/* /resources/edopro/scripts/ && \
     cp -r ygopro-format-alternatives/* /resources/ygopro/alternatives/ && \
     cp edopro-banlists-ignis/OCG.lflist.conf /resources/ygopro/ocg/lflist.conf
 
-# Debug safety — ensures folder exists even if copy fails
 RUN test -d /resources || mkdir -p /resources
 
 
@@ -82,7 +80,10 @@ FROM public.ecr.aws/docker/library/node:24.11.0-bullseye AS server-builder
 WORKDIR /server
 
 COPY package.json package-lock.json ./
-RUN npm ci
+
+ENV HUSKY=0
+
+RUN npm ci --ignore-scripts
 
 RUN git clone --depth 1 https://github.com/diangogav/evolution-types.git ./src/evolution-types
 
@@ -106,7 +107,7 @@ RUN apt-get update && \
 
 WORKDIR /app
 
-COPY --from=server-builder /server/dist ./
+COPY --from=server-builder /server/dist ./dist
 COPY --from=server-builder /server/package.json ./package.json
 COPY --from=server-builder /server/node_modules ./node_modules
 
@@ -115,4 +116,4 @@ COPY --from=core-builder /app/core/CoreIntegrator ./core/CoreIntegrator
 
 COPY --from=resources-builder /resources ./resources
 
-CMD ["dumb-init", "node", "./src/index.js"]
+CMD ["dumb-init", "node", "./dist/src/index.js"]
