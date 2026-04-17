@@ -15,7 +15,6 @@ RUN git clone --depth 1 --branch master https://github.com/ProjectIgnis/CardScri
     git clone --depth 1 --branch master https://github.com/evolutionygo/pre-release-database-cdb ygopro-prereleases-cdb && \
     git clone --depth 1 --branch main https://github.com/evolutionygo/cards-art-server ygopro-cards-art && \
     git clone --depth 1 --branch main https://github.com/evolutionygo/server-formats-cdb.git ygopro-format-alternatives && \
-    git clone --depth 1 --branch main https://github.com/Hacato/Realm-Of-Kings.git realm-of-kings && \
     wget -O ygopro-lflist.conf https://cdntx.moecube.com/ygopro-database/zh-CN/lflist.conf && \
     wget -O ygopro-cards.cdb https://cdntx.moecube.com/ygopro-database/zh-CN/cards.cdb
 
@@ -29,10 +28,8 @@ RUN mkdir -p \
     /resources/ygopro/base/script \
     /resources/ygopro/prereleases-cdb \
     /resources/ygopro/cards-art \
-    /resources/ygopro/cards-art/field \
     /resources/ygopro/alternatives \
-    /resources/ygopro/ocg \
-    /resources/realm-of-kings
+    /resources/ygopro/ocg
 
 RUN cp -r edopro-card-scripts/* /resources/edopro/scripts/ && \
     cp -r edopro-card-databases/* /resources/edopro/databases/ && \
@@ -44,11 +41,7 @@ RUN cp -r edopro-card-scripts/* /resources/edopro/scripts/ && \
     cp -r ygopro-prereleases-cdb/* /resources/ygopro/prereleases-cdb/ && \
     cp -r ygopro-cards-art/* /resources/ygopro/cards-art/ && \
     cp -r ygopro-format-alternatives/* /resources/ygopro/alternatives/ && \
-    cp edopro-banlists-ignis/OCG.lflist.conf /resources/ygopro/ocg/lflist.conf && \
-    find realm-of-kings -maxdepth 1 -name "*.cdb" -exec cp {} /resources/edopro/databases/ \; && \
-    cp -r realm-of-kings/scripts/* /resources/edopro/scripts/ && \
-    cp -r realm-of-kings/pics/* /resources/ygopro/cards-art/ && \
-    cp -r realm-of-kings -T /resources/realm-of-kings
+    cp edopro-banlists-ignis/OCG.lflist.conf /resources/ygopro/ocg/lflist.conf
 
 RUN test -d /resources || mkdir -p /resources
 
