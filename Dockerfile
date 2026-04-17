@@ -94,7 +94,7 @@ RUN npm run build && \
 
 
 # Stage 4: Final image
-FROM public.ecr.aws/docker/library/node:24.11.0-slim
+FROM public.ecr.aws/docker/library/node:24.11.0-bullseye
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -102,6 +102,9 @@ RUN apt-get update && \
     liblua5.3-dev \
     libsqlite3-dev \
     libevent-dev \
+    python3 \
+    make \
+    g++ \
     dumb-init && \
     rm -rf /var/lib/apt/lists/*
 
@@ -110,6 +113,8 @@ WORKDIR /app
 COPY --from=server-builder /server/dist ./dist
 COPY --from=server-builder /server/package.json ./package.json
 COPY --from=server-builder /server/node_modules ./node_modules
+
+RUN npm rebuild better-sqlite3
 
 COPY --from=core-builder /app/core/libocgcore.so ./core/libocgcore.so
 COPY --from=core-builder /app/core/CoreIntegrator ./core/CoreIntegrator
