@@ -55,7 +55,7 @@ RUN find . -name ".git" -type d -exec rm -rf {} + 2>/dev/null; \
     cp -r ygopro-cards-art /resources/ygopro/cards-art && \
     cp -r ygopro-format-alternatives /resources/ygopro/alternatives && \
     cp edopro-banlists-ignis/OCG.lflist.conf /resources/ygopro/ocg/lflist.conf && \
-    cp -r realm-of-kings/script/* /resources/edopro/scripts/ && \
+    cp -r realm-of-kings/script/* /resources/edopro/script/ && \
     find realm-of-kings -maxdepth 1 -name "*.cdb" -exec cp {} /resources/edopro/databases/ \;
 
 
