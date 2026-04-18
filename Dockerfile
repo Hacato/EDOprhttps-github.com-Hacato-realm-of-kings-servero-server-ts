@@ -7,8 +7,8 @@ RUN apt-get update -y && \
 
 WORKDIR /repositories
 
-ARG CACHE_BUST=3
-RUN echo "CACHE_BUST=$CACHE_BUST" && \
+ARG CACHE_BUST_DOWNLOAD=3
+RUN echo "DOWNLOAD_BUST=$CACHE_BUST_DOWNLOAD" && \
     git clone --depth 1 --branch master https://github.com/ProjectIgnis/CardScripts.git edopro-card-scripts && \
     git clone --depth 1 --branch master https://github.com/ProjectIgnis/BabelCDB.git edopro-card-databases && \
     git clone --depth 1 --branch master https://github.com/ProjectIgnis/LFLists edopro-banlists-ignis && \
@@ -18,74 +18,68 @@ RUN echo "CACHE_BUST=$CACHE_BUST" && \
     git clone --depth 1 --branch main https://github.com/evolutionygo/cards-art-server ygopro-cards-art && \
     git clone --depth 1 --branch main https://github.com/evolutionygo/server-formats-cdb.git ygopro-format-alternatives && \
     git clone --depth 1 --branch main https://github.com/Hacato/Realm-Of-Kings.git realm-of-kings && \
-    wget -O ygopro-lflist.conf https://cdntx.moecube.com/ygopro-database/zh-CN/lflist.conf && \
-    wget -O ygopro-cards.cdb https://cdntx.moecube.com/ygopro-database/zh-CN/cards.cdb
+    wget --no-cache -O ygopro-lflist.conf https://cdntx.moecube.com/ygopro-database/zh-CN/lflist.conf && \
+    wget --no-cache -O ygopro-cards.cdb https://cdntx.moecube.com/ygopro-database/zh-CN/cards.cdb
 
-RUN bash -c 'set -e; \
-    declare -A MAP=( \
-    ["2010.03 Edison(Pre Errata)"]="edison" \
-    ["2014.04 HAT (Pre Errata)"]="hat" \
-    ["jtp-oficial"]="jtp" \
-    ["GOAT"]="goat" \
-    ["Rush"]="rush" \
-    ["Speed"]="speed" \
-    ["Tengu.Plant"]="tengu" \
-    ["World"]="world" \
-    ["MD.2025.03"]="md" \
-    ["Genesys"]="genesys" \
-    ); \
-    for name in "${!MAP[@]}"; do \
-    src="./edopro-banlists-evolution/${name}.lflist.conf"; \
-    [ -f "$src" ] || src="./edopro-banlists-ignis/${name}.lflist.conf"; \
-    cp "$src" "./ygopro-format-alternatives/${MAP[$name]}/lflist.conf"; \
-    done'
+RUN mkdir -p /resources/edopro/scripts \
+    /resources/edopro/databases \
+    /resources/edopro/banlists-ignis \
+    /resources/edopro/banlists-evolution \
+    /resources/edopro/pics \
+    /resources/ygopro/base/script \
+    /resources/ygopro/prereleases-cdb \
+    /resources/ygopro/cards-art \
+    /resources/ygopro/alternatives \
+    /resources/ygopro/ocg
 
-RUN find . -name ".git" -type d -exec rm -rf {} + 2>/dev/null; \
-    mkdir -p /resources/edopro \
-             /resources/ygopro/base \
-             /resources/ygopro/ocg && \
-    cp -r edopro-card-scripts /resources/edopro/scripts && \
-    cp -r edopro-card-databases /resources/edopro/databases && \
-    cp -r edopro-banlists-ignis /resources/edopro/banlists-ignis && \
-    cp -r edopro-banlists-evolution /resources/edopro/banlists-evolution && \
-    cp -r ygopro-scripts /resources/ygopro/base/script && \
+RUN cp -r edopro-card-scripts/* /resources/edopro/scripts/ && \
+    cp -r edopro-card-databases/* /resources/edopro/databases/ && \
+    cp -r edopro-banlists-ignis/* /resources/edopro/banlists-ignis/ && \
+    cp -r edopro-banlists-evolution/* /resources/edopro/banlists-evolution/ && \
+    cp -r ygopro-scripts/* /resources/ygopro/base/script/ && \
     cp ygopro-lflist.conf /resources/ygopro/base/lflist.conf && \
     cp ygopro-cards.cdb /resources/ygopro/base/cards.cdb && \
-    cp -r ygopro-prereleases-cdb /resources/ygopro/prereleases-cdb && \
-    cp -r ygopro-cards-art /resources/ygopro/cards-art && \
-    cp -r ygopro-format-alternatives /resources/ygopro/alternatives && \
+    cp -r ygopro-prereleases-cdb/* /resources/ygopro/prereleases-cdb/ && \
+    cp -r ygopro-cards-art/* /resources/ygopro/cards-art/ && \
+    cp -r ygopro-format-alternatives/* /resources/ygopro/alternatives/ && \
     cp edopro-banlists-ignis/OCG.lflist.conf /resources/ygopro/ocg/lflist.conf && \
-    cp -r realm-of-kings/script/* /resources/edopro/scripts/ && \
-    find realm-of-kings -maxdepth 1 -name "*.cdb" -exec cp {} /resources/edopro/databases/ \;
-
+    cp -r realm-of-kings/scripts/* /resources/edopro/scripts/ && \
+    find realm-of-kings -maxdepth 1 -name "*.cdb" -exec cp {} /resources/edopro/databases/ \; && \
+    if [ -d "realm-of-kings/pics" ]; then cp -r realm-of-kings/pics/* /resources/edopro/pics/; fi && \
+    chmod -R a+r /resources && \
+    echo "##### DATABASE FILES (build)" && \
+    ls -lh /resources/edopro/databases/ && \
+    echo "##### SCRIPT FILES (build)" && \
+    ls -lh /resources/edopro/scripts/ && \
+    echo "##### IMAGE FILES (build)" && \
+    ls -lh /resources/edopro/pics/ || true
 
 # Stage 2: Build CoreIntegrator
 FROM public.ecr.aws/docker/library/node:24.11.0-bullseye-slim AS core-builder
 
 RUN apt-get update -y && \
     apt-get install -y --no-install-recommends \
-    g++ make cmake pkg-config \
-    libboost-system-dev \
-    libsqlite3-dev \
-    libjsoncpp-dev \
-    nlohmann-json3-dev \
-    libcurl4-openssl-dev && \
+      g++ make cmake pkg-config \
+      libboost-system-dev \
+      libsqlite3-dev \
+      libjsoncpp-dev \
+      nlohmann-json3-dev \
+      libcurl4-openssl-dev && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
+COPY . .
+RUN mkdir -p /app/core/modules && \
+    if [ -d "/app/core/src/modules" ]; then cp -r /app/core/src/modules/* /app/core/modules/; fi
 
-ARG CACHE_BUST=3
-COPY ./core .
-
+WORKDIR /app/core
 RUN cmake -B build -S . -DCMAKE_BUILD_TYPE=Release && \
-    cmake --build build
-
+    cmake --build build -- -j1
 
 # Stage 3: Build Node.js server
 FROM public.ecr.aws/docker/library/node:24.11.0-bullseye AS server-builder
 
 WORKDIR /server
-
 COPY package.json package-lock.json ./
 ENV HUSKY=0
 RUN npm ci --ignore-scripts
@@ -93,28 +87,48 @@ RUN npm ci --ignore-scripts
 RUN git clone --depth 1 https://github.com/diangogav/evolution-types.git ./src/evolution-types
 
 COPY . .
-
 RUN npm run build && \
     npm prune --production
 
-
 # Stage 4: Final image
-FROM public.ecr.aws/docker/library/node:24.11.0-slim
+FROM public.ecr.aws/docker/library/node:24.11.0-bullseye
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl liblua5.3-dev libsqlite3-dev libevent-dev dumb-init && \
+    apt-get install -y --no-install-recommends \
+      curl \
+      liblua5.3-dev \
+      libsqlite3-dev \
+      libevent-dev \
+      python3 \
+      make \
+      g++ \
+      dumb-init && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-COPY --from=server-builder /server/dist ./
+COPY --from=server-builder /server/dist ./dist
 COPY --from=server-builder /server/package.json ./package.json
 COPY --from=server-builder /server/node_modules ./node_modules
+RUN npm rebuild better-sqlite3
 
-COPY --from=core-builder /app/build/libocgcore.so ./core/libocgcore.so
-COPY --from=core-builder /app/build/CoreIntegrator ./core/CoreIntegrator
+COPY --from=core-builder /app/core/libocgcore.so ./core/libocgcore.so
+COPY --from=core-builder /app/core/CoreIntegrator ./core/CoreIntegrator
 
 COPY --from=resources-builder /resources ./resources
 
+ARG CACHE_BUST=2
+RUN echo "CACHE_BUST=$CACHE_BUST" && \
+    echo "##### DATABASE FILES (/app/resources)" && \
+    ls -lh /app/resources/edopro/databases/ && \
+    echo "##### SCRIPT FILES (/app/resources)" && \
+    ls -lh /app/resources/edopro/scripts/ && \
+    echo "##### IMAGE FILES (/app/resources)" && \
+    ls -lh /app/resources/edopro/pics/ && \
+    echo "##### BANLIST FILES (/app/resources)" && \
+    ls -lh /app/resources/edopro/banlists-evolution/ && \
+    echo "##### YGOPRO BASE FILES (/app/resources)" && \
+    ls -lh /app/resources/ygopro/base/ || true
+
 ENV LD_LIBRARY_PATH=/app/core
-CMD ["dumb-init", "node", "./src/index.js"]
+CMD ["dumb-init", "node", "./dist/src/index.js"]
