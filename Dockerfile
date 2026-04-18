@@ -7,7 +7,7 @@ RUN apt-get update -y && \
 
 WORKDIR /repositories
 
-ARG CACHE_BUST=2
+ARG CACHE_BUST=3
 RUN echo "CACHE_BUST=$CACHE_BUST" && \
     git clone --depth 1 --branch master https://github.com/ProjectIgnis/CardScripts.git edopro-card-scripts && \
     git clone --depth 1 --branch master https://github.com/ProjectIgnis/BabelCDB.git edopro-card-databases && \
@@ -74,7 +74,7 @@ RUN apt-get update -y && \
 
 WORKDIR /app
 
-ARG CACHE_BUST=2
+ARG CACHE_BUST=3
 COPY ./core .
 
 RUN cmake -B build -S . -DCMAKE_BUILD_TYPE=Release && \
