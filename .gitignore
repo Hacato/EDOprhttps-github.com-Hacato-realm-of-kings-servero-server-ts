@@ -66,4 +66,7 @@ dependencies/
 build/
 
 mycard
+
+# Allow resources folder if needed
 resources/
+!resources/
