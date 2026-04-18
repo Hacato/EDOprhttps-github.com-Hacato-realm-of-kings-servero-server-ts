@@ -7,7 +7,7 @@ RUN apt-get update -y && \
 
 WORKDIR /repositories
 
-ARG CACHE_BUST=4
+ARG CACHE_BUST=5
 RUN echo "CACHE_BUST=$CACHE_BUST" && \
     git clone --depth 1 --branch master https://github.com/ProjectIgnis/CardScripts.git edopro-card-scripts && \
     git clone --depth 1 --branch master https://github.com/ProjectIgnis/BabelCDB.git edopro-card-databases && \
@@ -49,85 +49,11 @@ RUN cp -r edopro-card-scripts/* /resources/edopro/scripts/ && \
     chmod -R a+r /resources && \
     echo "##### DATABASE FILES (build)" && \
     ls -lh /resources/edopro/databases/ && \
+    echo "##### CHECK FOR YOUR DATABASE" && \
+    ls -lh /resources/edopro/databases/ | grep -i "realm" || true && \
     echo "##### SCRIPT FILES (build)" && \
     ls -lh /resources/edopro/scripts/ && \
+    echo "##### CHECK FOR YOUR SCRIPT" && \
+    ls -lh /resources/edopro/scripts/ | grep -i "charizard" || true && \
     echo "##### IMAGE FILES (build)" && \
     ls -lh /resources/edopro/pics/ || true
-
-# Stage 2: Build CoreIntegrator
-FROM public.ecr.aws/docker/library/node:24.11.0-bullseye-slim AS core-builder
-
-RUN apt-get update -y && \
-    apt-get install -y --no-install-recommends \
-      g++ make cmake pkg-config \
-      libboost-system-dev \
-      libsqlite3-dev \
-      libjsoncpp-dev \
-      nlohmann-json3-dev \
-      libcurl4-openssl-dev && \
-    rm -rf /var/lib/apt/lists/*
-
-WORKDIR /app
-COPY . .
-RUN mkdir -p /app/core/modules && \
-    if [ -d "/app/core/src/modules" ]; then cp -r /app/core/src/modules/* /app/core/modules/; fi
-
-WORKDIR /app/core
-RUN cmake -B build -S . -DCMAKE_BUILD_TYPE=Release && \
-    cmake --build build -- -j1
-
-# Stage 3: Build Node.js server
-FROM public.ecr.aws/docker/library/node:24.11.0-bullseye AS server-builder
-
-WORKDIR /server
-COPY package.json package-lock.json ./
-ENV HUSKY=0
-RUN npm ci --ignore-scripts
-
-RUN git clone --depth 1 https://github.com/diangogav/evolution-types.git ./src/evolution-types
-
-COPY . .
-RUN npm run build && \
-    npm prune --production
-
-# Stage 4: Final image
-FROM public.ecr.aws/docker/library/node:24.11.0-bullseye
-
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-      curl \
-      liblua5.3-dev \
-      libsqlite3-dev \
-      libevent-dev \
-      python3 \
-      make \
-      g++ \
-      dumb-init && \
-    rm -rf /var/lib/apt/lists/*
-
-WORKDIR /app
-
-COPY --from=server-builder /server/dist ./dist
-COPY --from=server-builder /server/package.json ./package.json
-COPY --from=server-builder /server/node_modules ./node_modules
-RUN npm rebuild better-sqlite3
-
-COPY --from=core-builder /app/core/libocgcore.so ./core/libocgcore.so
-COPY --from=core-builder /app/core/CoreIntegrator ./core/CoreIntegrator
-
-COPY --from=resources-builder /resources ./resources
-
-ARG CACHE_BUST_FINAL=3
-RUN echo "CACHE_BUST_FINAL=$CACHE_BUST_FINAL" && \
-    echo "##### DATABASE FILES (/app/resources)" && \
-    ls -lh /app/resources/edopro/databases/ && \
-    echo "##### SCRIPT FILES (/app/resources)" && \
-    ls -lh /app/resources/edopro/scripts/ && \
-    echo "##### IMAGE FILES (/app/resources)" && \
-    ls -lh /app/resources/edopro/pics/ && \
-    echo "##### BANLIST FILES (/app/resources)" && \
-    ls -lh /app/resources/edopro/banlists-evolution/ && \
-    echo "##### YGOPRO BASE FILES (/app/resources)" && \
-    ls -lh /app/resources/ygopro/base/ || true
-
-CMD ["dumb-init", "node", "./dist/src/index.js"]
