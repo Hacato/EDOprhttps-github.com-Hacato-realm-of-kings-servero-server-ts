@@ -113,7 +113,7 @@ COPY --from=server-builder /server/node_modules ./node_modules
 RUN npm rebuild better-sqlite3
 
 COPY --from=core-builder /app/core/libocgcore.so ./core/libocgcore.so
-COPY --from=core-builder /app/core/CoreIntegrator ./core/CoreIntegrator
+COPY --from=core-builder /app/core/build/CoreIntegrator ./core/CoreIntegrator
 
 COPY --from=resources-builder /resources ./resources
 
