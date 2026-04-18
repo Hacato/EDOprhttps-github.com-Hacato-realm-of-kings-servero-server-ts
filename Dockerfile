@@ -115,7 +115,6 @@ RUN npm rebuild better-sqlite3
 COPY --from=core-builder /app/core/libocgcore.so ./core/libocgcore.so
 COPY --from=core-builder /app/core/CoreIntegrator ./core/CoreIntegrator
 
-# Keep resources where the app actually looks: /app/resources
 COPY --from=resources-builder /resources ./resources
 
 ARG CACHE_BUST=2
@@ -131,4 +130,5 @@ RUN echo "CACHE_BUST=$CACHE_BUST" && \
     echo "##### YGOPRO BASE FILES (/app/resources)" && \
     ls -lh /app/resources/ygopro/base/ || true
 
+ENV LD_LIBRARY_PATH=/app/core
 CMD ["dumb-init", "node", "./dist/src/index.js"]
