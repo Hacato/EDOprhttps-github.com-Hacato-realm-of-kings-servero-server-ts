@@ -20,6 +20,7 @@ postgres_data/
 *databases/
 *.db
 *.cdb
+!*.cdb
 *banlists/
 
 # Project configuration
@@ -54,7 +55,9 @@ mercury/pre-releases/tcg/*
 *repositories/
 
 # Scripts
-scripts/
+scripts/*
+!scripts/
+!scripts/*.lua
 
 # Miscellaneous Directories
 core/dependencies/
@@ -63,4 +66,4 @@ dependencies/
 build/
 
 mycard
-resources/ 
+resources/
