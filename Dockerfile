@@ -7,7 +7,9 @@ RUN apt-get update -y && \
 
 WORKDIR /repositories
 
-RUN git clone --depth 1 --branch master https://github.com/ProjectIgnis/CardScripts.git edopro-card-scripts && \
+ARG CACHE_BUST=1
+RUN echo "CACHE_BUST=$CACHE_BUST" && \
+    git clone --depth 1 --branch master https://github.com/ProjectIgnis/CardScripts.git edopro-card-scripts && \
     git clone --depth 1 --branch master https://github.com/ProjectIgnis/BabelCDB.git edopro-card-databases && \
     git clone --depth 1 --branch master https://github.com/ProjectIgnis/LFLists edopro-banlists-ignis && \
     git clone --depth 1 --branch main https://github.com/termitaklk/lflist edopro-banlists-evolution && \
@@ -72,6 +74,7 @@ RUN apt-get update -y && \
 
 WORKDIR /app
 
+ARG CACHE_BUST=1
 COPY ./core .
 
 RUN cmake -B build -S . -DCMAKE_BUILD_TYPE=Release && \
