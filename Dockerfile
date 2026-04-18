@@ -7,7 +7,7 @@ RUN apt-get update -y && \
 
 WORKDIR /repositories
 
-ARG CACHE_BUST=3
+ARG CACHE_BUST=4
 RUN echo "CACHE_BUST=$CACHE_BUST" && \
     git clone --depth 1 --branch master https://github.com/ProjectIgnis/CardScripts.git edopro-card-scripts && \
     git clone --depth 1 --branch master https://github.com/ProjectIgnis/BabelCDB.git edopro-card-databases && \
@@ -55,31 +55,20 @@ RUN find . -name ".git" -type d -exec rm -rf {} + 2>/dev/null; \
     cp -r ygopro-cards-art /resources/ygopro/cards-art && \
     cp -r ygopro-format-alternatives /resources/ygopro/alternatives && \
     cp edopro-banlists-ignis/OCG.lflist.conf /resources/ygopro/ocg/lflist.conf && \
-    cp -r realm-of-kings/script/* /resources/edopro/scripts/ && \
-    find realm-of-kings -maxdepth 1 -name "*.cdb" -exec cp {} /resources/edopro/databases/ \;
+    cp -r realm-of-kings/scripts/* /resources/edopro/scripts/ && \
+    find realm-of-kings -maxdepth 1 -name "*.cdb" -exec cp {} /resources/edopro/databases/ \; && \
+    echo "##### REALM OF KINGS ROOT" && \
+    ls -lh realm-of-kings/ || true && \
+    echo "##### EDO DB FILES" && \
+    ls -lh /resources/edopro/databases/ || true && \
+    echo "##### EDO SCRIPT FILES" && \
+    ls -lh /resources/edopro/scripts/ | head -50 || true
 
-
-# Stage 2: Build CoreIntegrator
+# Stage 2: Placeholder core stage (skip broken custom core build)
 FROM public.ecr.aws/docker/library/node:24.11.0-bullseye-slim AS core-builder
 
-RUN apt-get update -y && \
-    apt-get install -y --no-install-recommends \
-    g++ make cmake pkg-config \
-    libboost-system-dev \
-    libsqlite3-dev \
-    libjsoncpp-dev \
-    nlohmann-json3-dev \
-    libcurl4-openssl-dev && \
-    rm -rf /var/lib/apt/lists/*
-
 WORKDIR /app
-
-ARG CACHE_BUST=3
-COPY ./core .
-
-RUN cmake -B build -S . -DCMAKE_BUILD_TYPE=Release && \
-    cmake --build build
-
+RUN mkdir -p /app/core && echo "Skipping custom core build"
 
 # Stage 3: Build Node.js server
 FROM public.ecr.aws/docker/library/node:24.11.0-bullseye AS server-builder
@@ -97,7 +86,6 @@ COPY . .
 RUN npm run build && \
     npm prune --production
 
-
 # Stage 4: Final image
 FROM public.ecr.aws/docker/library/node:24.11.0-slim
 
@@ -107,14 +95,16 @@ RUN apt-get update && \
 
 WORKDIR /app
 
-COPY --from=server-builder /server/dist ./
+COPY --from=server-builder /server/dist ./dist
 COPY --from=server-builder /server/package.json ./package.json
 COPY --from=server-builder /server/node_modules ./node_modules
 
-COPY --from=core-builder /app/build/libocgcore.so ./core/libocgcore.so
-COPY --from=core-builder /app/build/CoreIntegrator ./core/CoreIntegrator
+# Use prebuilt core files from repo output if present in dist/runtime layout
+# If your app already includes/ships these elsewhere, keep these paths aligned with your server code.
+COPY core/libocgcore.so ./core/libocgcore.so
+COPY core/CoreIntegrator ./core/CoreIntegrator
 
 COPY --from=resources-builder /resources ./resources
 
 ENV LD_LIBRARY_PATH=/app/core
-CMD ["dumb-init", "node", "./src/index.js"]
+CMD ["dumb-init", "node", "./dist/src/index.js"]
